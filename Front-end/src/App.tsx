@@ -1,10 +1,12 @@
-import Home from "./components/Home"
+
+import WeatherDashboard from "./components/WeatherDasboard"
 
 function App() {
 
   return (
     <>
-      <Home />
+
+      <WeatherDashboard />
     </>
   )
 }

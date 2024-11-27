@@ -1,8 +1,8 @@
-import { io } from "socket.io-client"
+import { io, Socket } from "socket.io-client"
 
-const socket = () => {
+const socket: Socket =
     io('http://localhost:3001', {
-        transports: ['websockets']
+        transports: ['websocket'],
     })
-}
+
 export default socket
