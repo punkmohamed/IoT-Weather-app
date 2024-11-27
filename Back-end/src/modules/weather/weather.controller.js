@@ -4,7 +4,7 @@ import axios from "axios";
 import dotenv from "dotenv";
 dotenv.config();
 
-const api = process.env.OPEN_WEATHER_API
+export const api = process.env.OPEN_WEATHER_API
 
 
 const getCurrentWeather = async (req, res) => {
