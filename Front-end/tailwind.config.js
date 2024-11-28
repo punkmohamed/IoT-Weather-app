@@ -52,8 +52,15 @@ export default {
 					'3': 'hsl(var(--chart-3))',
 					'4': 'hsl(var(--chart-4))',
 					'5': 'hsl(var(--chart-5))'
-				}
-			}
+				},
+				sky: "#348dcf"
+			},
+			backgroundImage: {
+				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+			},
+			gradientColorStops: {
+				'white-transparent': 'rgba(255, 255, 255, 0.5)',
+			},
 		}
 	},
 	plugins: [require("tailwindcss-animate"), require('tailwind-scrollbar')],

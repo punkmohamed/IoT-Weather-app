@@ -8,8 +8,9 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { WeatherAlert } from "@/types/types";
 import { AlertCircleIcon } from "lucide-react";
-import { WeatherAlert } from "./WeatherDasboard";
+
 type WeatherAlertsProps = {
     weatherAlerts: WeatherAlert[]
 }
@@ -18,9 +19,12 @@ const WeatherAlerts = ({ weatherAlerts }: WeatherAlertsProps) => {
     return (
         <AlertDialog>
             <AlertDialogTrigger asChild>
-                <button className="flex items-center bg-yellow-100 text-yellow-800 px-4 py-2 rounded-lg hover:bg-yellow-200 transition">
-                    <AlertCircleIcon className="mr-2" />
-                    {weatherAlerts.length} Active Weather Alert{weatherAlerts.length > 1 ? 's' : ''}
+                <button className=" relative flex items-center bg-yellow-100  text-yellow-800 px-4 py-2 rounded-lg hover:bg-yellow-200 transition">
+                    <div className=" absolute top-2 left-1  ">
+                        <AlertCircleIcon className="absolute animate-pulse  " />
+                        <AlertCircleIcon className="absolute opacity-50" />
+                    </div>
+                    <span className="ml-4"> {weatherAlerts.length} Active Weather Alert{weatherAlerts.length > 1 ? 's' : ''}</span>
                 </button>
             </AlertDialogTrigger>
             <AlertDialogContent>

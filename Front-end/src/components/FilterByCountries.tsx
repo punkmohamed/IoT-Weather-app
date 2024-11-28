@@ -25,24 +25,23 @@ type FilterByCountriesProps = {
 
     countries: Country[];
     states: State[];
+    theme: string
 
 };
 
 
 const FilterByCountries = ({ selectedCountry, setSelectedCountry, setSelectedState,
     countries, selectedState,
-    states }: FilterByCountriesProps) => {
+    states, theme }: FilterByCountriesProps) => {
 
 
     return (
-        <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-
+        <div className="mb-6 grid grid-cols-2 gap-4">
             <Select
                 value={selectedCountry}
                 onValueChange={(value) => {
                     setSelectedCountry(value);
                     setSelectedState('');
-
                 }}
             >
                 <SelectTrigger className="w-full">

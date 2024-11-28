@@ -5,98 +5,27 @@ import { Country, State } from 'country-state-city';
 // import night from '../assets/74-512.webp'
 // import day from '../assets/6ef442c9fd7e8d00f43b2c6a0e4291fb.jpg'
 
-import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend
-} from 'chart.js';
 
 import {
     DropletIcon,
     WindIcon,
     ThermometerIcon,
     CloudLightningIcon,
-    Clock,
-    Cloud,
-    Calendar,
 } from 'lucide-react';
 import FilterByCountries from './FilterByCountries';
 import WeatherAlerts from './WeatherAlerts';
 
 import { weatherPics } from './../constants/constant';
 import WeatherCards from './WeatherCards';
-import WeatherChartLine from './WeatherChartLine';
-import TemptureChart from './TemptureChart';
+import WeatherChartLine from './charts/WeatherChartLine';
+import TemptureChart from './charts/TemptureChart';
+import { ForecastData, WeatherAlert, WeatherData } from '@/types/types';
+import HourlyForecast from './HourlyForecast';
+import DailyForecast from './DailyForecast';
+import { Input } from './ui/input';
+import { Button } from './ui/button';
 
 
-
-
-export interface WeatherAlert {
-    type: 'extreme' | 'warning' | 'info';
-    message: string;
-    description: string;
-    icon: React.ReactNode;
-}
-ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend
-);
-
-
-export type WeatherData = {
-    main: {
-        temp: number;
-        humidity: number;
-        feels_like: number;
-        temp_min: number;
-        temp_max: number;
-        pressure: number;
-    };
-    weather: {
-        id: number;
-        description: string;
-        main: string;
-        icon: string;
-    }
-    wind: {
-        speed: number;
-        deg: number;
-    };
-    name: string;
-    sys: {
-        sunrise: number;
-        sunset: number;
-        country: string;
-    };
-    cod: number;
-}
-
-export type ForecastData = {
-    list: {
-        dt: number;
-        main: {
-            temp: number;
-            humidity: number;
-        };
-        weather: {
-            description: string;
-            icon: string;
-        };
-        wind: {
-            speed: number;
-        };
-    };
-}
 
 // Weather Dashboard Component
 const WeatherDashboard: React.FC = () => {
@@ -105,11 +34,11 @@ const WeatherDashboard: React.FC = () => {
     const [selectedCountry, setSelectedCountry] = useState<string>('EG');
     const [selectedState, setSelectedState] = useState<string>('Minya');
 
-    const [weatherData, setWeatherData] = useState<WeatherData[] | null>(null);
-    const [forecastData, setForecastData] = useState<ForecastData[] | null>(null);
+    const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+    const [forecastData, setForecastData] = useState<ForecastData | null>(null);
     const [weatherAlerts, setWeatherAlerts] = useState<WeatherAlert[]>([]);
     const determineBackground = () => {
-        const { day, rain, snow, thunder, fog, night } = weatherPics
+        const { day, rain, snow, thunder, cloud, fog, night } = weatherPics
         if (!weatherData) return;
 
         const { weather, sys } = weatherData;
@@ -121,6 +50,7 @@ const WeatherDashboard: React.FC = () => {
 
         if (mainWeather.includes('rain')) return rain
         if (mainWeather.includes('snow')) return snow;
+        if (mainWeather.includes('clouds')) return cloud;
         if (weatherId >= 200 && weatherId <= 232) return thunder
         if (mainWeather.includes('fog')) return fog;
 
@@ -136,7 +66,6 @@ const WeatherDashboard: React.FC = () => {
     const generateWeatherAlerts = useCallback((weatherData: WeatherData): WeatherAlert[] => {
         const alerts: WeatherAlert[] = [];
 
-        // Temperature Alerts
         if (weatherData.main.feels_like > 35) {
             alerts.push({
                 type: 'extreme',
@@ -222,95 +151,108 @@ const WeatherDashboard: React.FC = () => {
     const props = {
         selectedCountry, setSelectedCountry, setSelectedState,
         countries, selectedState,
-        states
+        states, theme
     }
 
-
+    console.log(weatherData, "setWeatherData");
+    console.log(forecastData, "setForecastData");
     return (
-        <div className={`min-h-screen p-6 md:p-8 lg:p-12 transition-all ${theme === 'light'
-            ? ' text-gray-900'
-            : ' text-white'}`}
+        <div
+            className={`min-h-screen p-4 sm:p-6 md:p-8 lg:p-9 transition-all ${theme === 'light' ? 'text-gray-900' : 'text-white'
+                }`}
             style={{
                 backgroundImage: `url(${backgroundImage})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
-            }}>
-            {weatherAlerts.length > 0 && <WeatherAlerts weatherAlerts={weatherAlerts} />}
+            }}
+        >
+            <div className='flex items-center justify-center my-3 mx-7 fixed top-0 right-0 z-40'>   {weatherAlerts.length > 0 && <WeatherAlerts weatherAlerts={weatherAlerts} />}
+            </div>
+            <div className={`w-full max-w-7xl mx-auto ${theme === 'light' ? 'bg-[#348dcf]' : 'bg-black/40 backdrop-blur'} rounded-lg p-4 sm:p-6 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-4`}>
 
-            <div className="w-full max-w-6xl mx-auto bg-black/40 backdrop-blur rounded-lg p-4 md:p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Left Column */}
-                <div className='flex flex-col gap-4 '>
-                    <FilterByCountries {...props} />
-
+                <div className='flex flex-col gap-4 lg:col-span-1'>
+                    <FilterByCountries  {...props} />
+                    <div className=" lg:hidden flex w-full max-w-sm items-center space-x-2">
+                        <Input type="search" placeholder="Search...." className={` ${theme === 'light' && 'bg-white text-black'}`} />
+                        <Button type="submit" className={` ${theme === 'light' && 'bg-white text-black hover:bg-yellow-400'}`} >Search</Button>
+                    </div>
                     <div
-                        className='w-full h-full h-auto rounded-lg gap-1 xl:gap-12 lg p-4 transition-all flex flex-col justify-between'
+                        className='w-full rounded-lg p-3 xl:p-6 transition-all flex flex-col justify-between'
                         style={{
                             backgroundImage: `url(${backgroundImage})`,
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
-
                         }}
                     >
                         <div className='text-white text-center flex flex-col items-center'>
-                            {/* <img src={theme ? night : night} className='size-14' alt="weather Type" /> */}
-                            <h2 className='text-4xl md:text-5xl lg:text-6xl mb-2'>28°</h2>
-                            <p className='text-lg mb-2'>Rainy Day</p>
-                            <p className='text-sm px-2 mb-4'>Lorem ipsum, dolor sit amet consectetur adipisicing elit.</p>
+                            <h2 className='text-4xl sm:text-5xl md:text-6xl mb-2'>
+                                {weatherData?.main?.temp.toFixed()}°
+                            </h2>
+                            <p className='text-lg mb-2'>{weatherData?.weather[0].main}</p>
+                            <p className='text-sm px-2 mb-4'>
+                                {weatherData?.weather[0].description}
+                            </p>
                         </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                            <WeatherCards />
-                            <WeatherCards />
-                            <WeatherCards />
-                            <WeatherCards />
+                        <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                            <WeatherCards
+                                theme={theme}
+                                title="Feels like"
+                                icon="temperature"
+                                measure={weatherData?.main?.feels_like}
+                                unit="°C"
+                            />
+                            <WeatherCards
+                                theme={theme}
+                                title="Humidity"
+                                icon="humidity"
+                                measure={weatherData?.main.humidity}
+                                unit="%"
+                            />
+                            <WeatherCards
+                                theme={theme}
+                                title="Wind Speed"
+                                icon="wind"
+                                measure={weatherData?.wind.speed}
+                                unit="m/s"
+                            />
+                            <WeatherCards
+                                theme={theme}
+                                title="Pressure"
+                                icon="pressure"
+                                measure={weatherData?.main.pressure}
+                                unit="hPa"
+                            />
                         </div>
                     </div>
                 </div>
 
-                {/* Right Column */}
-                <div className='col-span-1 md:col-span-2 flex flex-col gap-4'>
-                    <div className='flex flex-col gap-3 p-4 backdrop-blur-md bg-black/10 rounded-lg'>
-                        <div className='flex gap-1 text-slate-300 text-md'>
-                            <Clock />
-                            <h2 className='uppercase'>hourly forecast</h2>
-                        </div>
-                        <hr />
-                        <div className='flex items-center whitespace-nowrap overflow-auto gap-3'>
-                            <div className='py-2 mb-3 flex flex-col items-center justify-center gap-2 rounded-xl text-white bg-[#34333d] w-[100px] flex-shrink-0'>
-                                <span>Now</span>
-                                <h3 className='text-3xl'>28°</h3>
-                                <Cloud />
-                            </div>
-
-
-                        </div>
+                <div className='flex flex-col gap-4 lg:col-span-2'>
+                    <div className=" hidden lg:flex w-full max-w-sm items-center space-x-2">
+                        <Input type="search" placeholder="Search...." className={` ${theme === 'light' && 'bg-white text-black'}`} />
+                        <Button type="submit" className={`  ${theme === 'light' && 'bg-white text-sky hover:bg-yellow-400'}`} >Search</Button>
                     </div>
-                    <div className='flex flex-col gap-3 p-4 backdrop-blur-md bg-black/10 rounded-lg'>
-                        <div className='flex gap-1 text-slate-300 text-md'>
-                            <Calendar />
-                            <h2 className='uppercase'>10-day forecast</h2>
-                        </div>
-                        <hr />
-                        <div className='flex items-center whitespace-nowrap overflow-auto gap-3  scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent scrollbar-thumb-rounded-full'>
-                            <div className='py-2 mb-3 flex flex-col items-center justify-center gap-2 rounded-xl text-white bg-[#34333d] w-[100px] flex-shrink-0'>
-                                <span>Now</span>
-                                <span className='text-gray-400'>16/9</span>
-                                <h3 className='text-3xl'>28°</h3>
-                                <Cloud />
-                            </div>
-
-
-                        </div>
-                    </div>
-
+                    {forecastData && (
+                        <>
+                            <HourlyForecast theme={theme} forecastData={forecastData} />
+                            <DailyForecast theme={theme} forecastData={forecastData} />
+                        </>
+                    )}
                 </div>
-            </div>
 
-            <div className="max-w-6xl mx-auto bg-black/40 backdrop-blur p-4 py-5 rounded-lg">
-                {weatherData && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <WeatherChartLine forecastData={forecastData} />
-                        <TemptureChart />
+                {forecastData && (
+                    <div className="lg:col-span-3 grid grid-cols-1 lg:grid-cols-2 gap-4 ">
+                        <div className={` ${theme === 'light' ? 'bg-sky' : 'bg-black/40 backdrop-blur'} rounded-lg p-4 sm:p-6`}>
+                            <WeatherChartLine
+                                forecastData={forecastData}
+                                theme={theme}
+                            />
+                        </div>
+                        <div className={` ${theme === 'light' ? 'bg-sky' : 'bg-black/40 backdrop-blur'} rounded-lg p-4 sm:p-6`}>
+                            <TemptureChart
+                                forecastData={forecastData}
+                                theme={theme}
+                            />
+                        </div>
                     </div>
                 )}
             </div>

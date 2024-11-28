@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -12,7 +12,7 @@ import {
     Filler,
 } from 'chart.js';
 import { Sun, Moon, Wind, Droplet, ThermometerSun } from 'lucide-react';
-import { ForecastData } from './WeatherDasboard';
+import { ForecastData } from '@/types/types';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
@@ -29,9 +29,10 @@ interface ChartConfig {
     icon: JSX.Element;
 }
 type WeatherChartLineProps = {
-    forecastData: ForecastData[]
+    forecastData: ForecastData
+    theme: string
 }
-const WeatherChartLine = ({ forecastData }: WeatherChartLineProps) => {
+const WeatherChartLine = ({ forecastData, theme }: WeatherChartLineProps) => {
     const [weatherData, setWeatherData] = useState<WeatherDataItem[] | null>(null);
 
     const [activeChart, setActiveChart] = useState<'temperature' | 'humidity' | 'windSpeed'>('temperature');
@@ -81,7 +82,9 @@ const WeatherChartLine = ({ forecastData }: WeatherChartLineProps) => {
 
     const createChartData = (dataKey: 'temperature' | 'humidity' | 'windSpeed') => {
         const { color } = chartConfigs[dataKey];
-        const fillColor = 'rgba(255, 223, 0, 0.4)';
+        const fillColor = theme === 'dark'
+            ? 'rgba(147, 51, 234, 0.4)'
+            : 'rgba(255, 223, 0, 0.6)';
         return {
             labels: weatherData?.map((item) => item.date) || [],
             datasets: [
@@ -124,39 +127,48 @@ const WeatherChartLine = ({ forecastData }: WeatherChartLineProps) => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-sky-100 to-blue-200 p-6">
-            <div className="max-w-4xl mx-auto bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl overflow-hidden">
-                <div className="p-6">
-                    <div className="flex justify-between items-center mb-6">
-                        <h1 className="text-3xl font-bold text-gray-800"> Weather</h1>
-                        <div className="flex items-center space-x-2">
-                            <Sun className="w-8 h-8 text-yellow-500" />
-                            <Moon className="w-8 h-8 text-indigo-500" />
-                        </div>
+        <div className={`mx-auto ${theme === 'light'
+            ? 'bg-white text-gray-800'
+            : 'bg-gray-900/80 text-white'
+            } backdrop-blur-lg rounded-2xl shadow-xl overflow-hidden`}>
+            <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                    <h1 className={`text-3xl font-bold ${theme === 'dark' ? 'text-white' : 'text-sky'
+                        }`}>Weather</h1>
+                    <div className="flex items-center space-x-2">
+                        <Sun className={`w-8 h-8 ${theme === 'light' ? 'text-yellow-500' : 'text-gray-500'
+                            }`} />
+                        <Moon className={`w-8 h-8 ${theme === 'light' ? 'text-gray-500' : 'text-indigo-300'
+                            }`} />
                     </div>
+                </div>
 
-                    <div className="flex space-x-4 mb-6">
-                        {Object.keys(chartConfigs).map((key) => (
-                            <button
-                                key={key}
-                                onClick={() => setActiveChart(key as 'temperature' | 'humidity' | 'windSpeed')}
-                                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all shadow-sm ${activeChart === key
-                                    ? 'bg-blue-500 text-white shadow-lg'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                    }`}
 
-                            >
-                                {chartConfigs[key as 'temperature' | 'humidity' | 'windSpeed'].icon}
-                                <span className="font-medium">
-                                    {key.charAt(0).toUpperCase() + key.slice(1)}
-                                </span>
-                            </button>
-                        ))}
-                    </div>
+                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 flex-wrap gap-1 justify-center  mb-4 sm:mb-6">
+                    {Object.keys(chartConfigs).map((key) => (
+                        <button
+                            key={key}
+                            onClick={() => setActiveChart(key as 'temperature' | 'humidity' | 'windSpeed')}
+                            className={`flex items-center justify-center sm:justify-start space-x-1 md:w-32 px-3 py-2 rounded-lg transition-all shadow-sm w-full sm:w-auto 
+                                ${activeChart === key
+                                    ? (theme === 'dark'
+                                        ? 'bg-purple-600 text-white shadow-lg'
+                                        : 'bg-yellow-500 text-gray-900 shadow-lg')
+                                    : (theme === 'dark'
+                                        ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700')
+                                } mb-2 sm:mb-0`}
+                        >
+                            {chartConfigs[key as 'temperature' | 'humidity' | 'windSpeed'].icon}
+                            <span className="font-medium text-xs sm:text-sm">
+                                {key.charAt(0).toUpperCase() + key.slice(1)}
+                            </span>
+                        </button>
+                    ))}
+                </div>
 
-                    <div className="h-96">
-                        <Line data={createChartData(activeChart)} options={chartOptions} />
-                    </div>
+                <div className="h-64 sm:h-80 md:h-60">
+                    <Line data={createChartData(activeChart)} options={chartOptions} />
                 </div>
             </div>
         </div>

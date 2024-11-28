@@ -6,15 +6,19 @@ import {
     CardHeader,
     CardTitle
 } from "@/components/ui/card";
+import { ForecastData } from '@/types/types';
 
-
-const TemptureChart = () => {
+type TemptureChart = {
+    forecastData: ForecastData
+    theme: string
+}
+const TemptureChart = ({ forecastData, theme }: TemptureChart) => {
 
     const prepareForecastChartData = () => {
         if (!forecastData) return null;
 
         const labels = forecastData.list
-            .filter((_, index) => index % 8 === 0) // Get one data point per day
+            .filter((_, index) => index % 8 === 0)
             .map(item => new Date(item.dt * 1000).toLocaleDateString('en-US', {
                 weekday: 'short',
                 month: 'short',
@@ -47,7 +51,7 @@ const TemptureChart = () => {
     return (
         <Card className={`w-full ${theme === 'light'
             ? 'bg-white shadow-lg'
-            : 'bg-gray-800 text-white border-gray-700'}`}>
+            : 'bg-gray-900/80 text-white border-gray-700'} backdrop-blur-lg `}>
             <CardHeader>
                 <CardTitle className="text-xl font-bold">
                     5-Day Temperature Forecast
