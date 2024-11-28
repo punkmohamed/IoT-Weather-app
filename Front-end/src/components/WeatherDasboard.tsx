@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import { Country, State } from 'country-state-city';
-import { Line } from 'react-chartjs-2';
+
 // import night from '../assets/74-512.webp'
 // import day from '../assets/6ef442c9fd7e8d00f43b2c6a0e4291fb.jpg'
 
@@ -17,82 +17,24 @@ import {
 } from 'chart.js';
 
 import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle
-} from "@/components/ui/card";
-import {
-    SunIcon,
-    MoonIcon,
-
     DropletIcon,
     WindIcon,
-    MapPinIcon,
     ThermometerIcon,
-
     CloudLightningIcon,
-    Wind,
-    BarChart,
-    Droplet,
-    Thermometer,
     Clock,
     Cloud,
     Calendar,
-
 } from 'lucide-react';
 import FilterByCountries from './FilterByCountries';
 import WeatherAlerts from './WeatherAlerts';
 
 import { weatherPics } from './../constants/constant';
 import WeatherCards from './WeatherCards';
-interface WeatherData {
-    main: {
-        temp: number;
-        humidity: number;
-        feels_like: number;
-        temp_min: number;
-        temp_max: number;
-        pressure: number;
-    };
-    weather: Array<{
-        id: number;
-        description: string;
-        main: string;
-        icon: string;
-    }>;
-    wind: {
-        speed: number;
-        deg: number;
-    };
-    name: string;
-    sys: {
-        sunrise: number;
-        sunset: number;
-        country: string;
-    };
-    cod: number;
-}
+import WeatherChartLine from './WeatherChartLine';
+import TemptureChart from './TemptureChart';
 
-interface ForecastData {
-    list: Array<{
-        dt: number;
-        main: {
-            temp: number;
-            humidity: number;
-            feels_like: number;
-        };
-        weather: Array<{
-            description: string;
-            main: string;
-            id: number;
-        }>;
-        wind: {
-            speed: number;
-            deg: number;
-        };
-    }>;
-}
+
+
 
 export interface WeatherAlert {
     type: 'extreme' | 'warning' | 'info';
@@ -111,40 +53,49 @@ ChartJS.register(
 );
 
 
-interface WeatherData {
+export type WeatherData = {
     main: {
         temp: number;
         humidity: number;
         feels_like: number;
         temp_min: number;
         temp_max: number;
+        pressure: number;
     };
-    weather: Array<{
+    weather: {
+        id: number;
         description: string;
+        main: string;
         icon: string;
-    }>;
+    }
     wind: {
         speed: number;
         deg: number;
     };
     name: string;
+    sys: {
+        sunrise: number;
+        sunset: number;
+        country: string;
+    };
+    cod: number;
 }
 
-interface ForecastData {
-    list: Array<{
+export type ForecastData = {
+    list: {
         dt: number;
         main: {
             temp: number;
             humidity: number;
         };
-        weather: Array<{
+        weather: {
             description: string;
             icon: string;
-        }>;
+        };
         wind: {
             speed: number;
         };
-    }>;
+    };
 }
 
 // Weather Dashboard Component
@@ -154,8 +105,8 @@ const WeatherDashboard: React.FC = () => {
     const [selectedCountry, setSelectedCountry] = useState<string>('EG');
     const [selectedState, setSelectedState] = useState<string>('Minya');
 
-    const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
-    const [forecastData, setForecastData] = useState<ForecastData | null>(null);
+    const [weatherData, setWeatherData] = useState<WeatherData[] | null>(null);
+    const [forecastData, setForecastData] = useState<ForecastData[] | null>(null);
     const [weatherAlerts, setWeatherAlerts] = useState<WeatherAlert[]>([]);
     const determineBackground = () => {
         const { day, rain, snow, thunder, fog, night } = weatherPics
@@ -266,138 +217,8 @@ const WeatherDashboard: React.FC = () => {
         fetchWeatherData();
     }, [selectedState, generateWeatherAlerts]);
 
-    // Prepare forecast chart data
-    const prepareForecastChartData = () => {
-        if (!forecastData) return null;
 
-        const labels = forecastData.list
-            .filter((_, index) => index % 8 === 0) // Get one data point per day
-            .map(item => new Date(item.dt * 1000).toLocaleDateString('en-US', {
-                weekday: 'short',
-                month: 'short',
-                day: 'numeric'
-            }));
 
-        const temperatures = forecastData.list
-            .filter((_, index) => index % 8 === 0)
-            .map(item => item.main.temp);
-
-        return {
-            labels,
-            datasets: [{
-                label: 'Daily Temperature (°C)',
-                data: temperatures,
-                borderColor: theme === 'light' ? '#3B82F6' : '#93C5FD',
-                backgroundColor: theme === 'light'
-                    ? 'rgba(59, 130, 246, 0.2)'
-                    : 'rgba(147, 197, 253, 0.2)',
-                tension: 0.4,
-                borderWidth: 2,
-                pointRadius: 5,
-                pointBackgroundColor: theme === 'light' ? '#3B82F6' : '#93C5FD'
-            }]
-        };
-    };
-
-    // Render weather details
-    const renderWeatherDetails = () => {
-        if (!weatherData) return null;
-
-        return (
-            <Card className={`w-full ${theme === 'light'
-                ? 'bg-white shadow-lg'
-                : 'bg-gray-800 text-white border-gray-700'}`}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-xl font-bold flex items-center">
-                        <MapPinIcon className="mr-2" />
-                        {weatherData.name}
-                    </CardTitle>
-                    {theme === 'light' ? <SunIcon /> : <MoonIcon />}
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-                                <ThermometerIcon className="mr-2" />
-                                {weatherData.weather[0].description}
-                            </p>
-                            <p className="text-2xl font-semibold">
-                                {weatherData.main.temp.toFixed(1)}°C
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                                Feels like {weatherData.main.feels_like.toFixed(1)}°C
-                            </p>
-                        </div>
-                        <div className="space-y-2">
-                            <div className="flex items-center">
-                                <DropletIcon className="mr-2 text-blue-500" />
-                                <span>Humidity: {weatherData.main.humidity}%</span>
-                            </div>
-                            <div className="flex items-center">
-                                <WindIcon className="mr-2 text-green-500" />
-                                <span>Wind: {weatherData.wind.speed} m/s</span>
-                            </div>
-                            <div className="flex items-center">
-                                <ThermometerIcon className="mr-2 text-red-500" />
-                                <span>
-                                    Min/Max: {weatherData.main.temp_min.toFixed(1)}°C /
-                                    {weatherData.main.temp_max.toFixed(1)}°C
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-        );
-    };
-
-    // Render forecast chart
-    const renderForecastChart = () => {
-        const chartData = prepareForecastChartData();
-        if (!chartData) return null;
-
-        return (
-            <Card className={`w-full ${theme === 'light'
-                ? 'bg-white shadow-lg'
-                : 'bg-gray-800 text-white border-gray-700'}`}>
-                <CardHeader>
-                    <CardTitle className="text-xl font-bold">
-                        5-Day Temperature Forecast
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <Line
-                        data={chartData}
-                        options={{
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            scales: {
-                                y: {
-                                    beginAtZero: false,
-                                    ticks: {
-                                        color: theme === 'light' ? 'black' : 'white'
-                                    }
-                                },
-                                x: {
-                                    ticks: {
-                                        color: theme === 'light' ? 'black' : 'white'
-                                    }
-                                }
-                            },
-                            plugins: {
-                                legend: {
-                                    labels: {
-                                        color: theme === 'light' ? 'black' : 'white'
-                                    }
-                                }
-                            }
-                        }}
-                        height={300}
-                    />
-                </CardContent>
-            </Card>
-        );
-    };
     const props = {
         selectedCountry, setSelectedCountry, setSelectedState,
         countries, selectedState,
@@ -415,7 +236,6 @@ const WeatherDashboard: React.FC = () => {
                 backgroundPosition: 'center',
             }}>
             {weatherAlerts.length > 0 && <WeatherAlerts weatherAlerts={weatherAlerts} />}
-
 
             <div className="w-full max-w-6xl mx-auto bg-black/40 backdrop-blur rounded-lg p-4 md:p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Left Column */}
@@ -487,16 +307,10 @@ const WeatherDashboard: React.FC = () => {
             </div>
 
             <div className="max-w-6xl mx-auto bg-black/40 backdrop-blur p-4 py-5 rounded-lg">
-
-                <FilterByCountries {...props} />
-
-                {weatherAlerts.length > 0 && <WeatherAlerts weatherAlerts={weatherAlerts} />}
-
-                {/* Weather Details */}
                 {weatherData && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {renderWeatherDetails()}
-                        {renderForecastChart()}
+                        <WeatherChartLine forecastData={forecastData} />
+                        <TemptureChart />
                     </div>
                 )}
             </div>
