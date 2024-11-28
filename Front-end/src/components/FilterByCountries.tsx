@@ -44,7 +44,7 @@ const FilterByCountries = ({ selectedCountry, setSelectedCountry, setSelectedSta
                     setSelectedState('');
                 }}
             >
-                <SelectTrigger className="w-full">
+                <SelectTrigger className={`w-full ${theme === 'light' && 'bg-white border-none'}`}>
                     <SelectValue placeholder="Select Country" />
                 </SelectTrigger>
                 <SelectContent>
@@ -69,7 +69,7 @@ const FilterByCountries = ({ selectedCountry, setSelectedCountry, setSelectedSta
                     }}
                     disabled={states.length === 0}
                 >
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className={`w-full ${theme === 'light' && 'bg-white border-none '}`}>
                         <SelectValue placeholder="Select State/Province" />
                     </SelectTrigger>
                     <SelectContent>

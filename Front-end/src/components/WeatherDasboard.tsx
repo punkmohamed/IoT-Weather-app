@@ -24,12 +24,12 @@ import HourlyForecast from './HourlyForecast';
 import DailyForecast from './DailyForecast';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
+import WeatherTime from './WeatherTime';
 
 
 
-// Weather Dashboard Component
 const WeatherDashboard: React.FC = () => {
-    // State management
+
     const [theme, setTheme] = useState<'light' | 'dark'>('light');
     const [selectedCountry, setSelectedCountry] = useState<string>('EG');
     const [selectedState, setSelectedState] = useState<string>('Minya');
@@ -84,7 +84,7 @@ const WeatherDashboard: React.FC = () => {
             });
         }
 
-        // Wind Alerts
+
         if (weatherData.wind.speed > 10) {
             alerts.push({
                 type: 'warning',
@@ -94,7 +94,7 @@ const WeatherDashboard: React.FC = () => {
             });
         }
 
-        // Humidity Alerts
+
         if (weatherData.main.humidity > 80) {
             alerts.push({
                 type: 'info',
@@ -104,7 +104,7 @@ const WeatherDashboard: React.FC = () => {
             });
         }
 
-        // Weather Condition Alerts
+
         const severeCodes = [200, 201, 202, 210, 211, 212, 221, 230, 231, 232];
         if (severeCodes.includes(weatherData.weather[0].id)) {
             alerts.push({
@@ -117,7 +117,7 @@ const WeatherDashboard: React.FC = () => {
 
         return alerts;
     }, []);
-    // Fetch weather data
+
     useEffect(() => {
         const fetchWeatherData = async () => {
             if (!selectedState) return;
@@ -239,21 +239,28 @@ const WeatherDashboard: React.FC = () => {
                     )}
                 </div>
 
+
                 {forecastData && (
-                    <div className="lg:col-span-3 grid grid-cols-1 lg:grid-cols-2 gap-4 ">
-                        <div className={` ${theme === 'light' ? 'bg-sky' : 'bg-black/40 backdrop-blur'} rounded-lg p-4 sm:p-6`}>
-                            <WeatherChartLine
-                                forecastData={forecastData}
-                                theme={theme}
+                    <>
+                        <div className="lg:col-span-3 ">
+                            <WeatherTime forecastData={forecastData}
                             />
                         </div>
-                        <div className={` ${theme === 'light' ? 'bg-sky' : 'bg-black/40 backdrop-blur'} rounded-lg p-4 sm:p-6`}>
-                            <TemptureChart
-                                forecastData={forecastData}
-                                theme={theme}
-                            />
+                        <div className="lg:col-span-3 grid grid-cols-1 lg:grid-cols-2 gap-4 ">
+                            <div className={` ${theme === 'light' ? 'bg-sky' : 'bg-black/40 backdrop-blur'} rounded-lg p-4 sm:p-6`}>
+                                <WeatherChartLine
+                                    forecastData={forecastData}
+                                    theme={theme}
+                                />
+                            </div>
+                            <div className={` ${theme === 'light' ? 'bg-sky' : 'bg-black/40 backdrop-blur'} rounded-lg p-4 sm:p-6`}>
+                                <TemptureChart
+                                    forecastData={forecastData}
+                                    theme={theme}
+                                />
+                            </div>
                         </div>
-                    </div>
+                    </>
                 )}
             </div>
         </div>

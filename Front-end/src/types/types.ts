@@ -105,3 +105,4 @@ export interface WeatherAlert {
     description: string;
     icon: React.ReactNode;
 }
+

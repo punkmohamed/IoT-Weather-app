@@ -22,7 +22,7 @@ const WeatherCards = ({ title, icon, measure, unit, theme }: WeatherCardsProps) 
             {theme === 'light' && <Sunlight />}
 
             <CardHeader className="pb-2 p-2 xl:p-3 relative z-10">
-                <CardTitle className="flex items-center text-sm md:text-base text-gray-300">
+                <CardTitle className={`flex items-center text-sm md:text-base ${theme === 'light' ? 'text-white' : 'text-gray-300'}`}>
                     {iconMapping[icon]}
                     {title && title}
                 </CardTitle>
