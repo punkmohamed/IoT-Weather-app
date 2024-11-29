@@ -146,6 +146,7 @@ const WeatherDashboard: React.FC = () => {
                         setSelectedState(city);
                     }
                 } catch (error) {
+                    setSelectedState('Minya');
                     console.error('Error fetching city name:', error);
                 }
             };
@@ -164,6 +165,7 @@ const WeatherDashboard: React.FC = () => {
                     setSelectedState('Minya');
                 });
             } else {
+                setSelectedState('Minya');
                 console.log('Geolocation not supported');
             }
         };
