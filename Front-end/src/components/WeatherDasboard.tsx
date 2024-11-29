@@ -141,8 +141,6 @@ const WeatherDashboard: React.FC = () => {
                     });
                     if (response.data && response.data.results && response.data.results.length > 0) {
                         const city = response.data.results[0].components.state || 'Unknown state';
-                        console.log(response.data, "response.data");
-
                         setSelectedState(city);
                     }
                 } catch (error) {
