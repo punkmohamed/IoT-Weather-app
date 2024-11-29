@@ -1,3 +1,7 @@
+## Screenshots
+
+### Weather Dashboard
+![Weather Dashboard](docs/images/dashboard.png "Weather Dashboard Screenshot")
 
 # Weather App with IoT Sensor Simulation
 

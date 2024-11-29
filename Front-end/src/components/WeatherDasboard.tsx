@@ -138,7 +138,7 @@ const WeatherDashboard: React.FC = () => {
                         setLoading(false);
                     }
                 });
-                const response = await axios.get(`http://localhost:3001/weather/past/${selectedState}`)
+                const response = await axios.get(`https://weather-backend-production-4eda.up.railway.app/weather/past/${selectedState}`)
                 const weatherData = response?.data?.weather
                 setPastWeatherData(weatherData)
 
@@ -196,7 +196,7 @@ const WeatherDashboard: React.FC = () => {
 
                     const fetchWeatherData = async () => {
                         try {
-                            const response = await axios.get(`http://localhost:3001/weather/past/${search}`);
+                            const response = await axios.get(`https://weather-backend-production-4eda.up.railway.app/weather/past/${search}`);
                             const weatherData = response?.data?.weather;
                             setPastWeatherData(weatherData);
                             setLoading(false);
