@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Country, State } from 'country-state-city';
 
-// import night from '../assets/74-512.webp'
-// import day from '../assets/6ef442c9fd7e8d00f43b2c6a0e4291fb.jpg'
-
 
 import {
     DropletIcon,
@@ -44,7 +41,7 @@ const WeatherDashboard: React.FC = () => {
     const [forecastData, setForecastData] = useState<ForecastData | null>(null);
     const [weatherAlerts, setWeatherAlerts] = useState<WeatherAlert[]>([]);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string | null>(null);
     const determineBackground = () => {
         const { day, rain, snow, thunder, cloud, fog, night } = weatherPics
         if (!weatherData) return;
@@ -129,11 +126,10 @@ const WeatherDashboard: React.FC = () => {
     useEffect(() => {
         const fetchWeatherData = async () => {
             setLoading(true);
-            setError(null); // Clear any previous errors
+            setError(null);
 
-            // Emit the 'country' event to request weather data when the state changes
             if (selectedState) {
-                socket.emit('subscribe', selectedState, (response) => {
+                socket.emit('subscribe', selectedState, (response: any) => {
                     if (response.error) {
                         setError(response.error);
                         setLoading(false);
@@ -148,15 +144,10 @@ const WeatherDashboard: React.FC = () => {
 
             }
         };
-
-        // Listen for weather data from WebSocket
         socket.on('weather', (data) => {
             setLoading(false);
             setError(null);
-            console.log(data, "data");
-
             if (data.weather && data.forecast) {
-                // Process current weather data
                 const weather = data.weather;
                 const forecast = data.forecast;
                 const alerts = generateWeatherAlerts(weather);
@@ -164,55 +155,62 @@ const WeatherDashboard: React.FC = () => {
                 const { sunrise, sunset } = weather.sys;
                 const currentTime = new Date().getTime();
                 setTheme(currentTime < sunrise * 1000 || currentTime > sunset * 1000 ? 'dark' : 'light');
-
                 setWeatherData(weather);
                 setForecastData(forecast);
             }
         });
-
-        // Emit the weather request whenever the selectedState changes
         fetchWeatherData();
-
-        // Clean up the WebSocket connection when the component unmounts
         return () => {
             socket.off('weather');
         };
     }, [selectedState, generateWeatherAlerts]);
 
     useEffect(() => {
-        // Handle socket connection errors (if needed)
         socket.on('connect_error', (err) => {
             setLoading(false);
-            setError('Connection error: ', err.message);
+            setError(err.message);
         });
-
-        // Clean up the error listener when the component unmounts
         return () => {
             socket.off('connect_error');
         };
     }, []);
 
+    console.log(pastWeatherData);
     const props = {
         selectedCountry, setSelectedCountry, setSelectedState,
         countries, selectedState,
         states, theme
     }
-
     const handleSearch = (search: string) => {
         if (search) {
-            socket.emit('subscribe', search, (response) => {
+            setLoading(true);
+            setError(null);
+
+            socket.emit('subscribe', search, (response: any) => {
                 if (response.error) {
                     setError(response.error);
                     setLoading(false);
                 } else {
                     setError(null);
                     console.log(response.message);
-                    setLoading(false);
+
+                    const fetchWeatherData = async () => {
+                        try {
+                            const response = await axios.get(`http://localhost:3001/weather/past/${search}`);
+                            const weatherData = response?.data?.weather;
+                            setPastWeatherData(weatherData);
+                            setLoading(false);
+                        } catch (error) {
+                            setError("Error fetching past weather data");
+                            setLoading(false);
+                        }
+                    };
+
+                    fetchWeatherData();
                 }
             });
         }
-    }
-    console.log(error, "errrrrrrrrrrror");
+    };
 
 
     if (loading)
@@ -252,7 +250,7 @@ const WeatherDashboard: React.FC = () => {
                     </div>
                     {forecastData && weatherData && (
                         <div
-                            className='w-full rounded-lg p-3 xl:p-6 transition-all flex flex-col justify-between'
+                            className='w-full h-full rounded-lg p-3 xl:p-6 transition-all flex flex-col justify-evenly'
                             style={{
                                 backgroundImage: `url(${backgroundImage})`,
                                 backgroundSize: 'cover',
@@ -323,9 +321,9 @@ const WeatherDashboard: React.FC = () => {
                         <>
                             <HourlyForecast theme={theme} forecastData={forecastData} sensorData={sensorData} />
                             <DailyForecast theme={theme} forecastData={forecastData} sensorData={sensorData} />
-                            <PastWeather theme={theme} pastWeatherData={pastWeatherData} />
                         </>
                     )}
+                    {pastWeatherData && pastWeatherData.length > 0 && <PastWeather theme={theme} pastWeatherData={pastWeatherData} />}
                 </div>
 
 

@@ -48,16 +48,16 @@ const WeatherTime = ({ forecastData }: WeatherTimeProps) => {
         const eveningData = data.find((item) => item.dt_txt.includes("18:00:00"));
 
         const morning = {
-            temp: morningData?.main.temp,
-            weather: morningData?.weather[0].main,
+            temp: morningData?.main.temp ?? 0,
+            weather: morningData?.weather[0].main || "Unknown",
         };
         const afternoon = {
-            temp: afternoonData?.main.temp,
-            weather: afternoonData?.weather[0].main,
+            temp: afternoonData?.main.temp ?? 0,
+            weather: afternoonData?.weather[0].main || "Unknown",
         };
         const evening = {
-            temp: eveningData?.main.temp,
-            weather: eveningData?.weather[0].main,
+            temp: eveningData?.main.temp ?? 0,
+            weather: eveningData?.weather[0].main || "Unknown",
         };
 
         setWeatherData({

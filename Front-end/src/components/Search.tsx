@@ -8,8 +8,8 @@ type SearchProps = {
 }
 const Search = ({ theme, handleSearch, setSelectedState }: SearchProps) => {
     const [search, setSearch] = useState<string>('');
-    const handleKeyPress = (event) => {
-        if (event.key === 'Enter' && search.trim()) {
+    const handleKeyPress = (e: any) => {
+        if (e.key === 'Enter' && search.trim()) {
             handleSearch(search);
             setSelectedState('')
             setSearch('')

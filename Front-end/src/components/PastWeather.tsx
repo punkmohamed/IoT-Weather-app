@@ -24,15 +24,15 @@ const PastWeather = ({ theme, pastWeatherData }: DailyForecastProps) => {
     const simulatePastDates = (data: WeatherData[]) => {
         return data.map((item, index) => {
             const pastDate = new Date(today);
-            pastDate.setDate(today.getDate() - (index + 1)); // Adjust for each day
+            pastDate.setDate(today.getDate() - (index + 1));
             return {
                 ...item,
-                simulatedDate: pastDate.toISOString().split('T')[0], // Format date as YYYY-MM-DD
+                simulatedDate: pastDate.toISOString().split('T')[0],
             };
         });
     };
 
-    const simulatedData = simulatePastDates(pastWeatherData); // Simulate all past dates
+    const simulatedData = simulatePastDates(pastWeatherData);
 
     return (
         <div className={`relative flex flex-col gap-3 p-4 backdrop-blur-md ${theme === 'light' ? 'bg-black/10' : 'bg-black/10'} rounded-lg`}>

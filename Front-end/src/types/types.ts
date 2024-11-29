@@ -1,4 +1,5 @@
 export type WeatherData = {
+    _id?: string
     coord: {
         lon: number;
         lat: number;
