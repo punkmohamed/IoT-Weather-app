@@ -17,6 +17,15 @@ export type WeatherData = {
         temp_max: number;
         pressure: number;
         humidity: number;
+        simulated: {
+            feels_like: string;
+            pressure: string;
+            humidity: string;
+            wind: {
+                speed: string,
+                direction: string
+            }
+        }
     };
     visibility: number;
     wind: {
@@ -58,6 +67,15 @@ type List = {
         grnd_level?: number;
         humidity: number;
         temp_kf?: number;
+        simulated: {
+            feels_like: string;
+            pressure: string;
+            humidity: string;
+            wind: {
+                speed: string,
+                direction: string
+            }
+        }
     };
     weather: Weather[]
     clouds: {

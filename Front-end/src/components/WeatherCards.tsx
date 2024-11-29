@@ -5,11 +5,13 @@ import Sunlight from './Sunlight';
 type WeatherCardsProps = {
     title: string
     icon: string
-    measure: number | undefined
+    accMeasure: number | undefined
+    sensorMeasure: string | undefined
     unit: string
     theme: string
+    sensorData: boolean
 }
-const WeatherCards = ({ title, icon, measure, unit, theme }: WeatherCardsProps) => {
+const WeatherCards = ({ title, icon, accMeasure, sensorMeasure, unit, theme, sensorData }: WeatherCardsProps) => {
     const className = "mr-2 h-4 w-4 md:h-6 md:w-6 uppercase "
     const iconMapping: Record<WeatherCardsProps['icon'], JSX.Element> = {
         temperature: <ThermometerSun className={className} />,
@@ -31,13 +33,13 @@ const WeatherCards = ({ title, icon, measure, unit, theme }: WeatherCardsProps) 
             <CardContent className="py-1 md:py-3 p-2 xl:p-3 relative z-10">
                 <div className="flex items-center space-x-2">
                     <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
-                        {measure}
+                        {sensorData ? accMeasure : sensorMeasure}
                     </span>
                     <span className="text-gray-200 text-sm sm:text-base md:text-lg lg:text-xl">
                         {unit}
                     </span>
                 </div>
-                <p className="text-gray-200 text-xs md:text-sm mt-1">{title} {measure} {unit}</p>
+                <p className="text-gray-200 text-xs md:text-sm mt-1">{title}   {sensorData ? accMeasure : sensorMeasure} {unit}</p>
             </CardContent>
         </Card>
 

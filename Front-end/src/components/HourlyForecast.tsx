@@ -6,6 +6,7 @@ type HourlyForecastProps = {
     theme: string
 }
 const HourlyForecast = ({ forecastData, theme }: HourlyForecastProps) => {
+
     const weatherIcons: Record<string, JSX.Element> = {
         Clear: <Sun className={`h-6 w-6 ${theme ? 'text-white ' : 'text-yellow-300'}`} />,
         Rain: <Umbrella className={`h-6 w-6 ${theme ? 'text-white' : 'text-blue-300'}`} />,
