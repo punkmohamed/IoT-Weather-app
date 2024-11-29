@@ -34,7 +34,7 @@ const WeatherDashboard: React.FC = () => {
 
     const [theme, setTheme] = useState<'light' | 'dark'>('light');
     const [selectedCountry, setSelectedCountry] = useState<string>('EG');
-    const [selectedState, setSelectedState] = useState<string>('Minya');
+    const [selectedState, setSelectedState] = useState<string>('');
     const [sensorData, setSensorData] = useState<boolean>(false);
     const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
     const [pastWeatherData, setPastWeatherData] = useState<WeatherData[] | null>(null);
@@ -42,6 +42,11 @@ const WeatherDashboard: React.FC = () => {
     const [weatherAlerts, setWeatherAlerts] = useState<WeatherAlert[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [location, setLocation] = useState<{ latitude: number, longitude: number } | null>(null);
+
+
+    const geocodeApiKey = '3ec7c4df99e6420897d09dc2cd4087e4';
+
     const determineBackground = () => {
         const { day, rain, snow, thunder, cloud, fog, night } = weatherPics
         if (!weatherData) return;
@@ -123,6 +128,48 @@ const WeatherDashboard: React.FC = () => {
         return alerts;
     }, []);
 
+    useEffect(() => {
+        if (location) {
+            const { latitude, longitude } = location;
+            const fetchCityName = async () => {
+                try {
+                    const response = await axios.get(`https://api.opencagedata.com/geocode/v1/json`, {
+                        params: {
+                            q: `${latitude},${longitude}`,
+                            key: geocodeApiKey
+                        }
+                    });
+                    if (response.data && response.data.results && response.data.results.length > 0) {
+                        const city = response.data.results[0].components.state || 'Unknown state';
+                        console.log(response.data, "response.data");
+
+                        setSelectedState(city);
+                    }
+                } catch (error) {
+                    console.error('Error fetching city name:', error);
+                }
+            };
+
+            fetchCityName();
+        }
+    }, [location]);
+    useEffect(() => {
+        const getLocation = () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const { latitude, longitude } = position.coords;
+                    setLocation({ latitude, longitude });
+                }, (error) => {
+                    console.error('Error getting location:', error);
+                    setSelectedState('Minya');
+                });
+            } else {
+                console.log('Geolocation not supported');
+            }
+        };
+
+        getLocation();
+    }, []);
     useEffect(() => {
         const fetchWeatherData = async () => {
             setLoading(true);
