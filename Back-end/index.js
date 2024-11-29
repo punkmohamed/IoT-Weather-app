@@ -1,6 +1,6 @@
 
 import express from 'express'
-// import dateBase from './datebase/dbConnection'
+import dateBase from './datebase/dbConnection.js'
 import cors from 'cors'
 import dotenv from "dotenv";
 import weatherRoute from './src/modules/weather/weather.routes.js';
@@ -19,7 +19,8 @@ const io = new Server(server, {
 app.use(express.json())
 app.use(cors())
 app.use(weatherRoute)
-// dateBase
+dateBase
+
 weatherSocket(io)
 const PORT = process.env.PORT || 3001
 

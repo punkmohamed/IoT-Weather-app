@@ -67,16 +67,16 @@ type List = {
         grnd_level?: number;
         humidity: number;
         temp_kf?: number;
-        simulated: {
-            feels_like: string;
-            pressure: string;
-            humidity: string;
-            wind: {
-                speed: string,
-                direction: string
-            }
-        }
     };
+    simulated: {
+        feels_like: string;
+        pressure: string;
+        humidity: string;
+        wind: {
+            speed: string,
+            direction: string
+        }
+    }
     weather: Weather[]
     clouds: {
         all: number;

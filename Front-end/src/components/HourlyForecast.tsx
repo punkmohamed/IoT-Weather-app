@@ -4,8 +4,9 @@ import Sunlight from './Sunlight';
 type HourlyForecastProps = {
     forecastData: ForecastData
     theme: string
+    sensorData: boolean
 }
-const HourlyForecast = ({ forecastData, theme }: HourlyForecastProps) => {
+const HourlyForecast = ({ forecastData, theme, sensorData }: HourlyForecastProps) => {
 
     const weatherIcons: Record<string, JSX.Element> = {
         Clear: <Sun className={`h-6 w-6 ${theme ? 'text-white ' : 'text-yellow-300'}`} />,
@@ -39,7 +40,7 @@ const HourlyForecast = ({ forecastData, theme }: HourlyForecastProps) => {
                             className={`py-2 mb-3 flex flex-col items-center justify-center gap-2 rounded-xl text-white ${index === 0 ? theme === 'light' ? 'bg-yellow-400 bg-glass' : "bg-[#34333d]" : 'bg-transparent'}  w-[100px] xl:w-[130px] flex-shrink-0`}
                         >
                             <span>{time}</span>
-                            <h3 className="text-3xl">{forecast.main.temp.toFixed()}°</h3>
+                            <h3 className="text-3xl">{sensorData ? forecast.main.temp.toFixed() : forecast.simulated.feels_like}°</h3>
                             {weatherIcons[condition] || weatherIcons['Default']}
                         </div>
                     );

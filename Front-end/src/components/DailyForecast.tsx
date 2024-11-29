@@ -5,9 +5,10 @@ import Sunlight from './Sunlight';
 type DailyForecastProps = {
     forecastData: ForecastData;
     theme: string
+    sensorData: boolean
 };
 
-const DailyForecast = ({ forecastData, theme }: DailyForecastProps) => {
+const DailyForecast = ({ forecastData, theme, sensorData }: DailyForecastProps) => {
     const weatherIcons: Record<string, JSX.Element> = {
         Clear: <Sun className={`h-6 w-6 ${theme ? 'text-white ' : 'text-yellow-300'}`} />,
         Rain: <Umbrella className={`h-6 w-6 ${theme ? 'text-white' : 'text-blue-300'}`} />,
@@ -42,6 +43,7 @@ const DailyForecast = ({ forecastData, theme }: DailyForecastProps) => {
                 {Object.entries(dailyForecast).map(([date, forecast], index) => {
                     const condition = forecast.weather[0]?.main || 'Default';
                     const temp = forecast.main.temp.toFixed();
+                    const sensorTemp = forecast.simulated.feels_like
                     const icon = weatherIcons[condition] || weatherIcons['Default'];
                     const isToday = date === today;
                     return (
@@ -51,7 +53,7 @@ const DailyForecast = ({ forecastData, theme }: DailyForecastProps) => {
                         >
                             <span>{isToday ? 'Today' : new Date(date).toLocaleDateString('en-US', { weekday: 'long' })}</span>
                             <span className="text-gray-100">{new Date(date).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' })}</span>
-                            <h3 className="text-3xl">{temp}°</h3>
+                            <h3 className="text-3xl">{sensorData ? temp : sensorTemp}°</h3>
                             {icon}
                         </div>
                     );

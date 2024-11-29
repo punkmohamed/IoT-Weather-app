@@ -11,14 +11,14 @@ const Search = ({ theme, handleSearch, setSelectedState }: SearchProps) => {
     const handleKeyPress = (event) => {
         if (event.key === 'Enter' && search.trim()) {
             handleSearch(search);
-            setSelectedState(search)
+            setSelectedState('')
             setSearch('')
         }
     };
     const handleButtonClick = () => {
         if (search.trim()) {
             handleSearch(search);
-            setSelectedState(search)
+            setSelectedState('')
             setSearch('')
         }
     };

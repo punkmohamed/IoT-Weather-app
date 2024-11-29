@@ -2,6 +2,7 @@ import { faker } from '@faker-js/faker';
 import axios from 'axios';
 import dotenv from "dotenv";
 import NodeCache from 'node-cache';
+import WeatherModel from '../../datebase/models/Weather.js';
 
 dotenv.config();
 
@@ -30,27 +31,64 @@ const getCachedWeather = async (country) => {
         return cachedData;
     }
 
-    const [currentResponse, forecastResponse] = await Promise.allSettled([
-        axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${country}&appid=${api}&units=metric`),
-        axios.get(`https://api.openweathermap.org/data/2.5/forecast?q=${country}&appid=${api}&units=metric`),
-    ]);
+    try {
+        const [currentResponse, forecastResponse] = await Promise.allSettled([
+            axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${country}&appid=${api}&units=metric`),
+            axios.get(`https://api.openweathermap.org/data/2.5/forecast?q=${country}&appid=${api}&units=metric`),
+        ]);
 
-    if (currentResponse.status === 'fulfilled' && forecastResponse.status === 'fulfilled') {
-        const weather = currentResponse.value.data;
-        const forecast = forecastResponse.value.data;
+        if (currentResponse.status === 'fulfilled' && forecastResponse.status === 'fulfilled') {
+            const weather = currentResponse.value.data;
+            const forecast = forecastResponse.value.data;
+            if (!weather || !forecast) {
+                throw new Error('Weather data or forecast data is missing.');
+            }
+            // Add initial simulated data
+            weather.main.simulated = generateSimulatedData();
+            forecast.list.forEach(item => {
+                item.simulated = generateSimulatedData();
+            });
+            const today = new Date(); // Current date and time
+            const startOfDay = new Date(today.setHours(0, 0, 0, 0)); // Start of the day (00:00:00)
+            const endOfDay = new Date(today.setHours(23, 59, 59, 999)); // End of the day (23:59:59.999)
+            const time = weather.main.simulated.timestamp;
 
-        // Add initial simulated data
-        weather.main.simulated = generateSimulatedData();
-        forecast.list.forEach(item => {
-            item.simulated = generateSimulatedData();
-        });
+            // Extract the date (yyyy-mm-dd) from the time and createdAt
 
-        const data = { weather, forecast };
-        weatherCache.set(country, data);
-        return data;
-    } else {
-        throw new Error('Failed to fetch weather data.');
+            const existingData = await WeatherModel.findOne({
+                name: { $regex: new RegExp(country, "i") },
+                createdAt: {
+                    $gte: startOfDay,
+                    $lt: endOfDay
+                }
+            });
+            console.log(existingData, "existingData");
+
+            const dateFromTimestamp = new Date(time).toISOString().split('T')[0];
+            const createdAtDate = existingData && new Date(existingData.createdAt).toISOString().split('T')[0];
+
+            console.log(createdAtDate, "createdAtDate");
+            console.log(dateFromTimestamp, "dateFromTimestamp");
+            console.log(dateFromTimestamp === createdAtDate, "true or not");
+
+            if (!existingData && dateFromTimestamp !== createdAtDate) {
+                console.log(`No existing data found for ${country} today. Saving to database.`);
+                const weatherInstance = new WeatherModel(weather);
+                await weatherInstance.save();
+
+            }
+
+            const data = { weather, forecast };
+            weatherCache.set(country, data);
+            return data;
+        } else {
+            throw new Error('City not found or invalid API response.');
+        }
+    } catch (error) {
+        console.error(`Error fetching weather for ${country}:`, error.message);
+        throw new Error('City not found or invalid API response.');
     }
+
 };
 
 // Socket.IO real-time updates
@@ -61,10 +99,6 @@ const weatherSocket = (io) => {
         console.log('Socket connected:', socket.id);
 
         socket.on('subscribe', async (country, callback) => {
-            if (!country || typeof country !== 'string') {
-                callback({ error: 'Invalid country name' });
-                return;
-            }
 
             try {
                 const { weather, forecast } = await getCachedWeather(country);
@@ -83,14 +117,15 @@ const weatherSocket = (io) => {
 
                         // Send updated data to all clients subscribed to this country
                         io.to(country).emit('weather', { weather, forecast });
-                    }, 600);
+                    }, 60000);
 
                     intervalMap.set(country, intervalId);
                 }
                 socket.leaveAll();
                 socket.join(country);
             } catch (error) {
-                callback({ error: 'Failed to subscribe to weather updates' });
+                console.error(`Error fetching weather for ${country}:`, error.message);
+                callback({ error: error.message || 'Failed to subscribe to weather updates' });
             }
         });
 
